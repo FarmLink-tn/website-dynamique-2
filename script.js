@@ -714,26 +714,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const formData = new FormData(registerForm);
-            const usernameField = registerForm.querySelector('[name="username"]');
-
             const payload = {
                 last_name: (formData.get('last_name') || '').toString().trim(),
                 first_name: (formData.get('first_name') || '').toString().trim(),
                 email: (formData.get('email') || '').toString().trim(),
                 phone: (formData.get('phone') || '').toString(),
                 region: (formData.get('region') || '').toString().trim(),
+                username: (formData.get('username') || '').toString().trim(),
                 password: (formData.get('password') || '').toString(),
             };
-
-            const username = usernameField ? usernameField.value.trim() : '';
-            if (username !== '') {
-                payload.username = username;
-            }
 
             const phoneDigits = payload.phone.replace(/\D/g, '');
             const errors = [];
 
-            if (!payload.last_name || !payload.first_name || !payload.email || !payload.phone || !payload.region || !payload.password) {
+            if (!payload.last_name || !payload.first_name || !payload.email || !payload.phone || !payload.region || !payload.username || !payload.password) {
                 errors.push('Tous les champs sont requis.');
             }
             if (payload.email && !/^([^\s@]+)@([^\s@]+)\.([^\s@]+)$/.test(payload.email)) {
@@ -742,9 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (phoneDigits.length < 8) {
                 errors.push('Le numéro de téléphone doit contenir au moins 8 chiffres.');
             }
-            if (usernameField && username.length === 0) {
-                errors.push("Le nom d'utilisateur est requis.");
-            } else if (usernameField && username.length < 3) {
+            if (payload.username.length < 3) {
                 errors.push("Le nom d'utilisateur doit contenir au moins 3 caractères.");
             }
             if (payload.password.length < 8) {
@@ -796,9 +788,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     registerMessage.classList.add('text-green-500');
                 }
             } catch (error) {
-                const message = error instanceof Error
-                    ? `Erreur réseau ou serveur : ${error.message}`
-                    : 'Erreur réseau ou serveur.';
+                const message = error instanceof Error ? error.message : 'Erreur réseau.';
                 if (registerMessage) {
                     registerMessage.textContent = message;
                     registerMessage.classList.remove('text-green-500');

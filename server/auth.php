@@ -43,35 +43,37 @@ if ($method === 'POST' && $action === 'register') {
         ], 403);
     }
 
-    $rawPhone = (string)($payload['phone'] ?? '');
-    $normalizedPhone = preg_replace('/\D+/', '', $rawPhone);
-
     $data = [
         'last_name' => trim((string)($payload['last_name'] ?? '')),
         'first_name' => trim((string)($payload['first_name'] ?? '')),
         'email' => strtolower(trim((string)($payload['email'] ?? ''))),
-        'phone' => $normalizedPhone,
+        'phone' => preg_replace('/\D+/', '', (string)($payload['phone'] ?? '')),
         'region' => trim((string)($payload['region'] ?? '')),
+        'username' => trim((string)($payload['username'] ?? '')),
         'password' => (string)($payload['password'] ?? ''),
     ];
 
     $errors = [];
 
-    foreach (['last_name', 'first_name', 'email', 'phone', 'region', 'password'] as $field) {
+    foreach (['last_name', 'first_name', 'email', 'phone', 'region', 'username', 'password'] as $field) {
         if ($data[$field] === '') {
             $errors[] = 'Le champ ' . str_replace('_', ' ', $field) . ' est requis.';
         }
     }
 
     if ($data['email'] && !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Adresse e-mail invalide.';
+        $errors[] = "Adresse e-mail invalide.";
     }
 
-    if ($normalizedPhone !== '' && strlen($normalizedPhone) < 8) {
-        $errors[] = 'Le numéro de téléphone doit contenir au moins 8 chiffres.';
+    if ($data['phone'] && strlen($data['phone']) < 8) {
+        $errors[] = "Le numéro de téléphone doit contenir au moins 8 chiffres.";
     }
 
-    if ($data['password'] !== '' && strlen($data['password']) < 8) {
+    if ($data['username'] && strlen($data['username']) < 3) {
+        $errors[] = "Le nom d'utilisateur doit contenir au moins 3 caractères.";
+    }
+
+    if ($data['password'] && strlen($data['password']) < 8) {
         $errors[] = 'Le mot de passe doit contenir au moins 8 caractères.';
     }
 
@@ -87,43 +89,27 @@ if ($method === 'POST' && $action === 'register') {
         $pdo = db();
     } catch (PDOException $exception) {
         error_log('Database connection error: ' . $exception->getMessage());
-        $message = 'Connexion à la base de données impossible.';
-
-        if (filter_var(env('APP_DEBUG', 'false'), FILTER_VALIDATE_BOOLEAN)) {
-            $message .= ' ' . $exception->getMessage();
-        }
-
         json_response([
             'status' => 'error',
             'success' => false,
-            'message' => $message,
+            'message' => 'Connexion à la base de données impossible.',
         ], 500);
     }
 
     try {
-        $check = $pdo->prepare('SELECT 1 FROM users WHERE email = :email LIMIT 1');
-        $check->execute([':email' => $data['email']]);
-
-        if ($check->fetchColumn()) {
-            json_response([
-                'status' => 'error',
-                'success' => false,
-                'message' => 'Un compte existe déjà avec cette adresse e-mail.',
-            ], 409);
-        }
-
         $statement = $pdo->prepare(
-            'INSERT INTO users (email, first_name, last_name, phone, region, password, created_at)
-             VALUES (:email, :first_name, :last_name, :phone, :region, :password, NOW())'
+            'INSERT INTO users (last_name, first_name, email, phone, region, username, password_hash, created_at)
+             VALUES (:last_name, :first_name, :email, :phone, :region, :username, :password_hash, NOW())'
         );
 
         $statement->execute([
-            ':email' => $data['email'],
-            ':first_name' => $data['first_name'],
             ':last_name' => $data['last_name'],
+            ':first_name' => $data['first_name'],
+            ':email' => $data['email'],
             ':phone' => $data['phone'],
             ':region' => $data['region'],
-            ':password' => password_hash($data['password'], PASSWORD_DEFAULT),
+            ':username' => $data['username'],
+            ':password_hash' => password_hash($data['password'], PASSWORD_DEFAULT),
         ]);
 
         json_response([
@@ -133,6 +119,14 @@ if ($method === 'POST' && $action === 'register') {
         ], 201);
     } catch (PDOException $exception) {
         error_log('Registration failed: ' . $exception->getMessage());
+
+        if ((int)$exception->getCode() === 23000) {
+            json_response([
+                'status' => 'error',
+                'success' => false,
+                'message' => "Cet email ou nom d'utilisateur est déjà utilisé.",
+            ], 409);
+        }
 
         json_response([
             'status' => 'error',

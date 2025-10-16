@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmLink - Comment ça marche</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="aos.css">
+    <style>
+      [data-aos]{opacity:1 !important;transform:none !important;}
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="index.html">
+                    <img src="image/logo.png" alt="Logo FarmLink" class="h-12 w-auto">
+                </a>
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="about.html" class="nav-link" data-translate="nav_about">À propos</a>
+                <a href="how-it-works.html" class="nav-link active" data-translate="nav_how_it_works">Comment ça marche</a>
+                <a href="solutions.html" class="nav-link" data-translate="nav_solutions">Nos Solutions</a>
+                <a href="ai-advisor.html" class="nav-link" data-translate="nav_ai_advisor">Conseiller IA</a>
+                <a href="account.html" class="nav-link" data-translate="nav_account">Mon Compte</a>
+                <a href="contact.html" class="cta-button" data-translate="nav_get_quote">Obtenir un devis</a>
+            </div>
+            <div class="flex items-center">
+                <select id="language-switcher" class="mr-4 p-2 rounded-md">
+                    <option value="fr">FR</option>
+                    <option value="en">EN</option>
+                    <option value="ar">AR</option>
+                </select>
+                <div class="flex items-center cursor-pointer" id="theme-toggle">
+                    <svg id="theme-icon-light" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="theme-icon-dark" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </div>
+                <div class="md:hidden ml-4">
+                    <button id="menu-btn" class="focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="about.html" class="block py-2 px-4 text-sm" data-translate="nav_about_mobile">À propos</a>
+            <a href="how-it-works.html" class="block py-2 px-4 text-sm" data-translate="nav_how_it_works_mobile">Comment ça marche</a>
+            <a href="solutions.html" class="block py-2 px-4 text-sm" data-translate="nav_solutions_mobile">Nos Solutions</a>
+            <a href="ai-advisor.html" class="block py-2 px-4 text-sm" data-translate="nav_ai_advisor_mobile">Conseiller IA</a>
+            <a href="account.html" class="block py-2 px-4 text-sm" data-translate="nav_account_mobile">Mon Compte</a>
+            <a href="contact.html" class="block py-2 px-4 text-sm" data-translate="nav_get_quote_mobile">Obtenir un devis</a>
+        </div>
+    </header>
+
+    <main>
+        <section id="how-it-works" class="py-20">
+             <div class="container mx-auto px-6 text-center">
+                <h2 class="section-title" data-translate="how_it_works_title">Comment ça marche ?</h2>
+                <div class="grid md:grid-cols-3 gap-12 mt-12">
+                    <div class="how-it-works-card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card-icon">1</div>
+                        <h3 class="text-xl font-bold my-4" data-translate="step1_title">Installation "Retrofit"</h3>
+                        <p data-translate="step1_desc">Nous installons nos modules sur votre équipement existant, sans remplacement coûteux.</p>
+                    </div>
+                    <div class="how-it-works-card" data-aos="fade-up" data-aos-delay="200">
+                        <div class="card-icon">2</div>
+                        <h3 class="text-xl font-bold my-4" data-translate="step2_title">Connexion au Cloud</h3>
+                        <p data-translate="step2_desc">Les capteurs envoient les données en temps réel à notre plateforme sécurisée.</p>
+                    </div>
+                    <div class="how-it-works-card" data-aos="fade-up" data-aos-delay="300">
+                        <div class="card-icon">3</div>
+                        <h3 class="text-xl font-bold my-4" data-translate="step3_title">Contrôle & Optimisation</h3>
+                        <p data-translate="step3_desc">Vous gérez tout depuis le panneau de contrôle et recevez des recommandations de l'IA.</p>
+                    </div>
+                </div>
+             </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container mx-auto px-6 text-center py-8">
+            <p data-translate="footer_copyright">&copy; 2025 FarmLink. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script src="aos.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

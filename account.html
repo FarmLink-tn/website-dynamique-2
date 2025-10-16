@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmLink - Mon Compte</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="aos.css">
+    <style>
+      [data-aos]{opacity:1 !important;transform:none !important;}
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark">
+
+    <header class="sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="index.html">
+                    <img src="image/logo.png" alt="Logo FarmLink" class="h-14 w-auto">
+                </a>
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="about.html" class="nav-link" data-translate="nav_about">À propos</a>
+                <a href="how-it-works.html" class="nav-link" data-translate="nav_how_it_works">Comment ça marche</a>
+                <a href="solutions.html" class="nav-link" data-translate="nav_solutions">Nos Solutions</a>
+                <a href="ai-advisor.html" class="nav-link" data-translate="nav_ai_advisor">Conseiller IA</a>
+                <a href="account.html" class="nav-link active" data-translate="nav_account">Mon Compte</a>
+                <a href="contact.html" class="button" data-translate="nav_get_quote">Obtenir un devis</a>
+            </div>
+            <div class="flex items-center">
+                 <select id="language-switcher" class="mr-4">
+                    <option value="fr">FR</option>
+                    <option value="en">EN</option>
+                    <option value="ar">AR</option>
+                </select>
+                <div class="flex items-center cursor-pointer" id="theme-toggle">
+                    <svg id="theme-icon-light" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="theme-icon-dark" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </div>
+                <div class="md:hidden ml-4">
+                    <button id="menu-btn" class="focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden p-4 mt-2 mx-4">
+            <a href="about.html" class="block py-2 px-4 text-sm" data-translate="nav_about_mobile">À propos</a>
+            <a href="how-it-works.html" class="block py-2 px-4 text-sm" data-translate="nav_how_it_works_mobile">Comment ça marche</a>
+            <a href="solutions.html" class="block py-2 px-4 text-sm" data-translate="nav_solutions_mobile">Nos Solutions</a>
+            <a href="ai-advisor.html" class="block py-2 px-4 text-sm" data-translate="nav_ai_advisor_mobile">Conseiller IA</a>
+            <a href="account.html" class="block py-2 px-4 text-sm" data-translate="nav_account_mobile">Mon Compte</a>
+            <a href="contact.html" class="block py-2 px-4 text-sm" data-translate="nav_get_quote_mobile">Obtenir un devis</a>
+        </div>
+    </header>
+
+    <main>
+        <section id="account" class="py-20">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="section-title" data-translate="account_title">Mon Compte</h2>
+                <div class="max-w-xl mx-auto control-card mt-12">
+                    <div id="auth-section">
+                        <h3 class="text-2xl font-bold mb-6 text-brand-blue-500" data-translate="auth_login_title">Se connecter</h3>
+                        <form id="login-form">
+                            <div class="mb-4">
+                                <input type="text" id="login-username" class="form-input" placeholder="Nom d'utilisateur" required>
+                            </div>
+                            <div class="mb-6">
+                                <input type="password" id="login-password" class="form-input" placeholder="Mot de passe" required>
+                            </div>
+                            <button type="submit" class="button w-full" data-translate="auth_login_btn">Se connecter</button>
+                        </form>
+                        <p id="login-message" class="mt-2 text-red-500"></p>
+                        <p class="mt-4 text-text-300" data-translate="auth_register_prompt">Pas encore de compte ? <a href="register.html" class="text-brand-green-400 font-bold">Créer un compte</a></p>
+                    </div>
+
+
+                    <div id="user-dashboard" class="hidden text-left">
+                        <h3 id="welcome-message" class="text-2xl font-bold mb-4"></h3>
+                        <div class="mb-8">
+                            <h4 class="text-xl font-bold text-brand-blue-500 mb-2" data-translate="products_section_title">Mes Produits</h4>
+                            <form id="add-product-form" class="grid grid-cols-1 gap-4">
+                                <input type="text" id="product-name" class="form-input" placeholder="Nom du produit" required>
+                                <input type="number" id="product-quantity" class="form-input" placeholder="Quantité" required>
+                                <input type="tel" id="product-phone" class="form-input" placeholder="Téléphone GSM" required>
+                                <input type="number" step="0.01" id="product-ph" class="form-input" placeholder="pH">
+                                <input type="number" step="0.01" id="product-rain" class="form-input" placeholder="Pluie">
+                                <input type="number" step="0.01" id="product-humidity" class="form-input" placeholder="Humidité">
+                                <input type="number" step="0.01" id="product-soil_humidity" class="form-input" placeholder="Humidité du sol">
+                                <input type="number" step="0.01" id="product-light" class="form-input" placeholder="Lumière">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="product-valve_open" class="mr-2">
+                                    <label for="product-valve_open">Valve ouverte</label>
+                                </div>
+                                <input type="number" id="product-valve_angle" class="form-input" placeholder="Angle de valve">
+                                <button type="submit" class="button" data-translate="add_product_btn">Ajouter</button>
+                            </form>
+                            <table id="product-table" class="table-auto w-full mt-4 text-text-300">
+                                <thead>
+                                    <tr>
+                                        <th class="px-2">Nom</th>
+                                        <th class="px-2">Qté</th>
+                                        <th class="px-2">pH</th>
+                                        <th class="px-2">Pluie</th>
+                                        <th class="px-2">Humidité</th>
+                                        <th class="px-2">Humidité sol</th>
+                                        <th class="px-2">Lumière</th>
+                                        <th class="px-2">Valve</th>
+                                        <th class="px-2">Angle</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="product-list"></tbody>
+                            </table>
+                        </div>
+                        <button id="logout-btn" class="button button--glass" data-translate="logout_btn">Se déconnecter</button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-center py-8 border-t border-border-soft">
+        <p data-translate="footer_copyright">&copy; 2025 FarmLink. Tous droits réservés.</p>
+    </footer>
+    
+    <script src="aos.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

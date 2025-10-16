@@ -37,7 +37,7 @@ Required keys:
 - `DB_PORT` – Database port (default: `3306`)
 - `DB_NAME` – Database name (default: `brefzuoh_farmlink`)
 - `DB_USER` – Database user (default: `brefzuoh_farmlink`)
-- `DB_PASSWORD` – Database user password
+- `DB_PASSWORD` – NtopQX-73y94+A
 - `DB_CHARSET` – Charset, defaults to `utf8mb4`
 
 The `APP_DEBUG` flag controls whether detailed error messages are displayed to the browser. Leave it set to `false` in production.

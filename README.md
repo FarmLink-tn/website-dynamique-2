@@ -23,14 +23,45 @@ Obsolete files from the previous `farmlink_website/` directory have been removed
 
 ## Configuration
 
-This project reads database connection details from environment variables:
+### Database
 
-- `DB_HOST` – Database host
-- `DB_NAME` – Database name
-- `DB_USER` – Database user
-- `DB_PASSWORD` – Database password
+Database credentials are loaded from a `.env` file located either at the project root or inside the `server/` directory. Start by copying the provided template and updating it with the credentials provisioned in your hosting panel:
 
-Ensure these are set in your environment before running the application.
+```bash
+cp .env.example .env
+```
+
+Required keys:
+
+- `DB_HOST` – Database host (default: `10.10.10.100`)
+- `DB_PORT` – Database port (default: `3306`)
+- `DB_NAME` – Database name (default: `brefzuoh_farmlink`)
+- `DB_USER` – Database user (default: `brefzuoh_farmlink`)
+- `DB_PASSWORD` – Database user password
+- `DB_CHARSET` – Charset, defaults to `utf8mb4`
+
+The `APP_DEBUG` flag controls whether detailed error messages are displayed to the browser. Leave it set to `false` in production.
+
+### Connectivity test
+
+`test_db.php` performs a minimal connectivity check by loading the shared configuration and attempting a PDO connection. Deploy the file with the rest of the application and open `https://farmlink.tn/test_db.php` to confirm the database is reachable. A successful check responds with `OK DB`; failures return HTTP 500 along with a generic message (or the detailed error if `APP_DEBUG=true`).
+
+### Registration API
+
+The registration endpoint (`/server/auth.php?action=register`) expects a JSON payload with the following properties:
+
+```json
+{
+  "first_name": "...",
+  "last_name": "...",
+  "email": "...",
+  "phone": "...",
+  "region": "...",
+  "password": "..."
+}
+```
+
+Client-side validation is handled in `script.js`, while the backend sanitises and persists the record using prepared statements and hashed passwords.
 
 
 

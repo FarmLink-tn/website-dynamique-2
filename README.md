@@ -23,14 +23,49 @@ Obsolete files from the previous `farmlink_website/` directory have been removed
 
 ## Configuration
 
-This project reads database connection details from environment variables:
+### Database
 
-- `DB_HOST` – Database host
-- `DB_NAME` – Database name
-- `DB_USER` – Database user
-- `DB_PASSWORD` – Database password
+Database credentials are loaded from a `.env` file located either at the project root or inside the `server/` directory. Start by copying the provided template and updating it with the credentials provisioned in your hosting panel:
 
-Ensure these are set in your environment before running the application.
+```bash
+cp .env.example .env
+```
+
+Required keys:
+
+- `DB_HOST` – Database host (defaults to `10.10.10.100` if omitted)
+- `DB_PORT` – Database port (defaults to `3306`)
+- `DB_NAME` – Database name (set to `brefzuoh_farmlink` for production)
+- `DB_USER` – **MySQL user that has been granted ALL PRIVILEGES on `brefzuoh_farmlink` via cPanel**
+- `DB_PASSWORD` – Password of the MySQL user (example: `NtopQX-73y94+A`)
+- `DB_CHARSET` – Charset, defaults to `utf8mb4`
+
+`server/config.php` validates that `DB_NAME`, `DB_USER`, and `DB_PASSWORD` are present; if any are missing the API returns a safe `Connexion à la base de données impossible.` response and logs the technical reason when `APP_DEBUG=true`.
+
+After editing `.env`, confirm in **cPanel → MySQL® Databases** that the specified user is attached to `brefzuoh_farmlink` with all privileges, otherwise authentication will fail.
+
+The `APP_DEBUG` flag controls whether detailed error messages are displayed to the browser. Leave it set to `false` in production. Optionally provide `APP_TIMEZONE` (defaults to `UTC`) and session settings such as `SESSION_SECURE` or `SESSION_SAMESITE`.
+
+### Connectivity test
+
+`test_db.php` performs a minimal connectivity check by loading the shared configuration and attempting a PDO connection. Deploy the file with the rest of the application and open `https://farmlink.tn/test_db.php` to confirm the database is reachable. A successful check responds with `OK DB`; failures return HTTP 500 along with a generic message (or the detailed error if `APP_DEBUG=true`). Use this endpoint immediately after updating credentials to verify that the remote host, port, and firewall are accessible from the PHP runtime.
+
+### Registration API
+
+The registration endpoint (`/server/auth.php?action=register`) expects a JSON payload with the following properties:
+
+```json
+{
+  "first_name": "...",
+  "last_name": "...",
+  "email": "...",
+  "phone": "...",
+  "region": "...",
+  "password": "..."
+}
+```
+
+Client-side validation is handled in `script.js`, while the backend sanitises and persists the record using prepared statements and hashed passwords.
 
 
 

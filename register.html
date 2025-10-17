@@ -65,31 +65,28 @@
 
                     <div id="register-section">
                         <h3 class="text-2xl font-bold mb-6 text-brand-green-400" data-translate="auth_register_title">Créer un compte</h3>
-                        <form id="register-form">
+                        <form id="register-form" novalidate>
                             <div class="mb-4">
-                                <input type="text" id="register-last-name" class="form-input" placeholder="Nom" data-translate-placeholder="auth_last_name_placeholder" required>
+                                <input type="text" id="register-last-name" name="last_name" class="form-input" placeholder="Nom" data-translate-placeholder="auth_last_name_placeholder" autocomplete="family-name" required>
                             </div>
                             <div class="mb-4">
-                                <input type="text" id="register-first-name" class="form-input" placeholder="Prénom" data-translate-placeholder="auth_first_name_placeholder" required>
+                                <input type="text" id="register-first-name" name="first_name" class="form-input" placeholder="Prénom" data-translate-placeholder="auth_first_name_placeholder" autocomplete="given-name" required>
                             </div>
                             <div class="mb-4">
-                                <input type="email" id="register-email" class="form-input" placeholder="Email" data-translate-placeholder="auth_email_placeholder" required>
+                                <input type="email" id="register-email" name="email" class="form-input" placeholder="Email" data-translate-placeholder="auth_email_placeholder" autocomplete="email" required>
                             </div>
                             <div class="mb-4">
-                                <input type="tel" id="register-phone" class="form-input" placeholder="Téléphone" data-translate-placeholder="auth_phone_placeholder" required>
+                                <input type="tel" id="register-phone" name="phone" class="form-input" placeholder="Téléphone" data-translate-placeholder="auth_phone_placeholder" autocomplete="tel" required>
                             </div>
                             <div class="mb-4">
-                                <input type="text" id="register-region" class="form-input" placeholder="Région" data-translate-placeholder="auth_region_placeholder" required>
+                                <input type="text" id="register-region" name="region" class="form-input" placeholder="Région" data-translate-placeholder="auth_region_placeholder" autocomplete="address-level1" required>
                             </div>
                             <div class="mb-4">
-                                <input type="text" id="register-username" class="form-input" placeholder="Nom d'utilisateur" required>
-                            </div>
-                            <div class="mb-4">
-                                <input type="password" id="register-password" class="form-input" placeholder="Mot de passe" required>
+                                <input type="password" id="register-password" name="password" class="form-input" placeholder="Mot de passe" autocomplete="new-password" minlength="8" required>
                             </div>
                             <button type="submit" class="button w-full" data-translate="auth_register_btn">Créer le compte</button>
                         </form>
-                        <p id="register-message" class="mt-2 text-red-500"></p>
+                        <p id="register-message" class="mt-2 text-sm" aria-live="polite"></p>
                         <p class="mt-4 text-text-300" data-translate="auth_login_prompt">Déjà un compte ? <a href="account.html" class="text-brand-blue-500 font-bold">Se connecter</a></p>
                     </div>
 

@@ -1,36 +1,23 @@
 <?php
 // contact_submit.php — reçoit le POST, vérifie CSRF, envoie l’email via PHPMailer SMTP
-require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/csrf.php';
+require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  http_response_code(405);
-  header('Content-Type: application/json; charset=utf-8');
-  echo json_encode(['ok'=>false,'error'=>'method_not_allowed']);
-  exit;
+  json_response(['ok' => false, 'error' => 'method_not_allowed'], 405);
 }
 
-$token = $_POST['_csrf'] ?? '';
-if (!csrf_check($token)) {
-  http_response_code(403);
-  header('Content-Type: application/json; charset=utf-8');
-  echo json_encode(['ok'=>false,'error'=>'invalid_csrf_token']);
-  exit;
-}
+require_csrf($_POST);
 
 $name    = trim($_POST['name'] ?? '');
 $email   = trim($_POST['email'] ?? '');
 $message = trim($_POST['message'] ?? '');
 
 if ($name === '' || $email === '' || $message === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-  http_response_code(422);
-  header('Content-Type: application/json; charset=utf-8');
-  echo json_encode(['ok'=>false,'error'=>'invalid_input']);
-  exit;
+  json_response(['ok' => false, 'error' => 'invalid_input'], 422);
 }
 
 $mail = new PHPMailer(true);
@@ -55,11 +42,7 @@ try {
   $mail->Body = "De: {$name} <{$email}>\n\n{$message}";
 
   $mail->send();
-  http_response_code(200);
-  header('Content-Type: application/json; charset=utf-8');
-  echo json_encode(['ok'=>true]);
+  json_response(['ok' => true]);
 } catch (Exception $e) {
-  http_response_code(500);
-  header('Content-Type: application/json; charset=utf-8');
-  echo json_encode(['ok'=>false,'error'=>'mail_failed']);
+  json_response(['ok' => false, 'error' => 'mail_failed'], 500);
 }

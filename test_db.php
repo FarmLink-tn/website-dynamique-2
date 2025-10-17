@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/db_connect.php';
+require_once __DIR__ . '/server/config.php';
 
 header('Content-Type: text/plain; charset=utf-8');
 
 $debug = filter_var(env('APP_DEBUG', 'false'), FILTER_VALIDATE_BOOLEAN);
 
 try {
-    get_db_connection();
+    db();
     echo 'OK DB';
 } catch (Throwable $exception) {
     http_response_code(500);

@@ -6,26 +6,24 @@ async function ensureCsrfToken(forceRefresh = false) {
     }
 
     try {
-        const response = await fetch('/server/auth.php?action=csrf', {
+        const response = await fetch('/server/auth.php?action=check', {
             credentials: 'same-origin',
-            headers: { 'Accept': 'application/json' },
         });
 
         if (!response.ok) {
-            throw new Error(`Unable to fetch CSRF token (HTTP ${response.status})`);
+            throw new Error('Unable to fetch CSRF token');
         }
 
         const data = await response.json();
-        csrfToken = typeof data === 'object' && data !== null ? data.csrfToken || null : null;
+        csrfToken = data.csrfToken || null;
         return csrfToken;
     } catch (error) {
         console.error('CSRF token initialization failed', error);
-        csrfToken = null;
         return null;
     }
 }
 
-async function csrfFetch(url, options = {}, attempt = 0) {
+async function csrfFetch(url, options = {}) {
     const opts = { ...options };
     opts.headers = { ...(options.headers || {}) };
     opts.credentials = options.credentials || 'same-origin';
@@ -43,16 +41,7 @@ async function csrfFetch(url, options = {}, attempt = 0) {
     }
 
     opts.method = method;
-    const response = await fetch(url, opts);
-
-    if (response.status === 403 && method !== 'GET' && attempt === 0) {
-        const refreshed = await ensureCsrfToken(true);
-        if (refreshed) {
-            return csrfFetch(url, options, attempt + 1);
-        }
-    }
-
-    return response;
+    return fetch(url, opts);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -612,12 +601,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!token) {
             return;
         }
-
-        const selectors = ['input[name="csrf_token"]', 'input[name="_csrf"]'];
-        selectors.forEach(selector => {
-            document.querySelectorAll(selector).forEach(input => {
-                input.value = token;
-            });
+        document.querySelectorAll('input[name="csrf_token"]').forEach(input => {
+            input.value = token;
         });
     }).catch(() => {});
 
@@ -729,26 +714,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const formData = new FormData(registerForm);
-            const usernameField = registerForm.querySelector('[name="username"]');
-
             const payload = {
                 last_name: (formData.get('last_name') || '').toString().trim(),
                 first_name: (formData.get('first_name') || '').toString().trim(),
                 email: (formData.get('email') || '').toString().trim(),
                 phone: (formData.get('phone') || '').toString(),
                 region: (formData.get('region') || '').toString().trim(),
+                username: (formData.get('username') || '').toString().trim(),
                 password: (formData.get('password') || '').toString(),
             };
-
-            const username = usernameField ? usernameField.value.trim() : '';
-            if (username !== '') {
-                payload.username = username;
-            }
 
             const phoneDigits = payload.phone.replace(/\D/g, '');
             const errors = [];
 
-            if (!payload.last_name || !payload.first_name || !payload.email || !payload.phone || !payload.region || !payload.password) {
+            if (!payload.last_name || !payload.first_name || !payload.email || !payload.phone || !payload.region || !payload.username || !payload.password) {
                 errors.push('Tous les champs sont requis.');
             }
             if (payload.email && !/^([^\s@]+)@([^\s@]+)\.([^\s@]+)$/.test(payload.email)) {
@@ -757,9 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (phoneDigits.length < 8) {
                 errors.push('Le numéro de téléphone doit contenir au moins 8 chiffres.');
             }
-            if (usernameField && username.length === 0) {
-                errors.push("Le nom d'utilisateur est requis.");
-            } else if (usernameField && username.length < 3) {
+            if (payload.username.length < 3) {
                 errors.push("Le nom d'utilisateur doit contenir au moins 3 caractères.");
             }
             if (payload.password.length < 8) {
@@ -811,9 +788,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     registerMessage.classList.add('text-green-500');
                 }
             } catch (error) {
-                const message = error instanceof Error
-                    ? `Erreur réseau ou serveur : ${error.message}`
-                    : 'Erreur réseau ou serveur.';
+                const message = error instanceof Error ? error.message : 'Erreur réseau.';
                 if (registerMessage) {
                     registerMessage.textContent = message;
                     registerMessage.classList.remove('text-green-500');

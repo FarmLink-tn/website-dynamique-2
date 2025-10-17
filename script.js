@@ -1,11 +1,58 @@
 let csrfToken = null;
 
-function csrfFetch(url, options = {}) {
-    options.headers = options.headers || {};
-    if (options.method && options.method.toUpperCase() !== 'GET') {
-        options.headers['X-CSRF-Token'] = csrfToken;
+async function ensureCsrfToken(forceRefresh = false) {
+    if (csrfToken && !forceRefresh) {
+        return csrfToken;
     }
-    return fetch(url, options);
+
+    try {
+        const response = await fetch('/server/auth.php?action=csrf', {
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json' },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Unable to fetch CSRF token (HTTP ${response.status})`);
+        }
+
+        const data = await response.json();
+        csrfToken = typeof data === 'object' && data !== null ? data.csrfToken || null : null;
+        return csrfToken;
+    } catch (error) {
+        console.error('CSRF token initialization failed', error);
+        csrfToken = null;
+        return null;
+    }
+}
+
+async function csrfFetch(url, options = {}, attempt = 0) {
+    const opts = { ...options };
+    opts.headers = { ...(options.headers || {}) };
+    opts.credentials = options.credentials || 'same-origin';
+
+    const inferredMethod = opts.method || (opts.body ? 'POST' : 'GET');
+    const method = inferredMethod.toUpperCase();
+
+    if (method !== 'GET') {
+        if (!csrfToken) {
+            await ensureCsrfToken();
+        }
+        if (csrfToken) {
+            opts.headers['X-CSRF-Token'] = csrfToken;
+        }
+    }
+
+    opts.method = method;
+    const response = await fetch(url, opts);
+
+    if (response.status === 403 && method !== 'GET' && attempt === 0) {
+        const refreshed = await ensureCsrfToken(true);
+        if (refreshed) {
+            return csrfFetch(url, options, attempt + 1);
+        }
+    }
+
+    return response;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -561,25 +608,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el) el.classList.add('active');
   }
     // Fetch CSRF token for the session
-    csrfFetch('/server/auth.php?action=check')
-        .then(res => res.json())
-        .then(data => {
-            csrfToken = data.csrfToken;
-            document.querySelectorAll('input[name="csrf_token"]').forEach(input => {
-                input.value = csrfToken;
+    ensureCsrfToken().then(token => {
+        if (!token) {
+            return;
+        }
+
+        const selectors = ['input[name="csrf_token"]', 'input[name="_csrf"]'];
+        selectors.forEach(selector => {
+            document.querySelectorAll(selector).forEach(input => {
+                input.value = token;
             });
-        })
-        .catch(() => {});
+        });
+    }).catch(() => {});
 
     // --- NOUVELLE LOGIQUE POUR LA PAGE 'ACCOUNT.HTML' ---
-    if (document.getElementById('account')) {
+    const registerForm = document.getElementById('register-form');
+    const registerMessage = document.getElementById('register-message');
+    const authSection = document.getElementById('auth-section');
+    if (authSection && registerForm) {
         console.log("Script for account page is running."); // Ligne de débogage
         const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const authSection = document.getElementById('auth-section');
         const registerSection = document.getElementById('register-section');
         const loginMessage = document.getElementById('login-message');
-        const registerMessage = document.getElementById('register-message');
 
         // Gère la soumission du formulaire d'inscription
         if (registerForm) registerForm.addEventListener('submit', (e) => {
@@ -667,6 +717,110 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (registerSection) registerSection.classList.remove('hidden');
                 }
             });
+    }
+
+    if (registerForm && !authSection) {
+        registerForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            if (registerMessage) {
+                registerMessage.textContent = '';
+                registerMessage.classList.remove('text-red-500', 'text-green-500');
+            }
+
+            const formData = new FormData(registerForm);
+            const usernameField = registerForm.querySelector('[name="username"]');
+
+            const payload = {
+                last_name: (formData.get('last_name') || '').toString().trim(),
+                first_name: (formData.get('first_name') || '').toString().trim(),
+                email: (formData.get('email') || '').toString().trim(),
+                phone: (formData.get('phone') || '').toString(),
+                region: (formData.get('region') || '').toString().trim(),
+                password: (formData.get('password') || '').toString(),
+            };
+
+            const username = usernameField ? usernameField.value.trim() : '';
+            if (username !== '') {
+                payload.username = username;
+            }
+
+            const phoneDigits = payload.phone.replace(/\D/g, '');
+            const errors = [];
+
+            if (!payload.last_name || !payload.first_name || !payload.email || !payload.phone || !payload.region || !payload.password) {
+                errors.push('Tous les champs sont requis.');
+            }
+            if (payload.email && !/^([^\s@]+)@([^\s@]+)\.([^\s@]+)$/.test(payload.email)) {
+                errors.push('Adresse e-mail invalide.');
+            }
+            if (phoneDigits.length < 8) {
+                errors.push('Le numéro de téléphone doit contenir au moins 8 chiffres.');
+            }
+            if (usernameField && username.length === 0) {
+                errors.push("Le nom d'utilisateur est requis.");
+            } else if (usernameField && username.length < 3) {
+                errors.push("Le nom d'utilisateur doit contenir au moins 3 caractères.");
+            }
+            if (payload.password.length < 8) {
+                errors.push('Le mot de passe doit contenir au moins 8 caractères.');
+            }
+
+            if (errors.length) {
+                if (registerMessage) {
+                    registerMessage.textContent = errors.join(' ');
+                    registerMessage.classList.remove('text-green-500');
+                    registerMessage.classList.add('text-red-500');
+                }
+                return;
+            }
+
+            payload.phone = phoneDigits;
+
+            const token = await ensureCsrfToken();
+            if (!token) {
+                if (registerMessage) {
+                    registerMessage.textContent = "Impossible de contacter le serveur. Veuillez réessayer.";
+                    registerMessage.classList.add('text-red-500');
+                }
+                return;
+            }
+
+            try {
+                const response = await csrfFetch('/server/auth.php?action=register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+
+                const result = await response.json().catch(() => null);
+
+                if (!result) {
+                    throw new Error('Réponse du serveur invalide.');
+                }
+
+                if (!response.ok || !(result.success === true || result.status === 'success')) {
+                    const message = result.message || 'Erreur lors de la création du compte.';
+                    throw new Error(message);
+                }
+
+                registerForm.reset();
+                if (registerMessage) {
+                    registerMessage.textContent = result.message || 'Compte créé avec succès !';
+                    registerMessage.classList.remove('text-red-500');
+                    registerMessage.classList.add('text-green-500');
+                }
+            } catch (error) {
+                const message = error instanceof Error
+                    ? `Erreur réseau ou serveur : ${error.message}`
+                    : 'Erreur réseau ou serveur.';
+                if (registerMessage) {
+                    registerMessage.textContent = message;
+                    registerMessage.classList.remove('text-green-500');
+                    registerMessage.classList.add('text-red-500');
+                }
+            }
+        });
     }
 
         // Gère la soumission du formulaire d'ajout de produit
@@ -849,45 +1003,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-document.getElementById('register-form').addEventListener('submit', async function (e) {
-  e.preventDefault();
-
-  const form = e.target;
-  const data = {
-    last_name: form.last_name.value,
-    first_name: form.first_name.value,
-    email: form.email.value,
-    phone: form.phone.value,
-    region: form.region.value,
-    username: form.username.value,
-    password: form.password.value
-  };
-
-  // Get CSRF token
-  const checkRes = await fetch('server/auth.php?action=check');
-  const checkData = await checkRes.json();
-  const csrfToken = checkData.csrfToken;
-
-  // Send registration request
-  const response = await fetch('server/auth.php?action=register', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken
-    },
-    body: JSON.stringify(data)
-  });
-
-  const result = await response.json();
-  const messageEl = document.getElementById('register-message');
-
-  if (result.success) {
-    messageEl.textContent = 'Compte créé avec succès !';
-    messageEl.classList.remove('text-red-500');
-    messageEl.classList.add('text-green-500');
-  } else {
-    messageEl.textContent = result.message || 'Erreur lors de la création du compte.';
-    messageEl.classList.remove('text-green-500');
-    messageEl.classList.add('text-red-500');
-  }
-});

@@ -1,20 +1,11 @@
 <?php
-// csrf.php — génère/retourne un token par session
-require_once __DIR__ . '/config.php';
+// csrf.php — conserve la compatibilité avec les inclusions existantes
+require_once __DIR__ . '/bootstrap.php';
 
-function csrf_token(): string {
-  if (empty($_SESSION['csrf'])) { $_SESSION['csrf'] = bin2hex(random_bytes(32)); }
-  return $_SESSION['csrf'];
-}
-
-function csrf_check(?string $token): bool {
-  if (!$token || empty($_SESSION['csrf'])) return false;
-  return hash_equals($_SESSION['csrf'], $token);
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-  http_response_code(200);
-  header('Content-Type: application/json; charset=utf-8');
-  echo json_encode(['csrfToken' => csrf_token()]);
-  exit;
+if (php_sapi_name() !== 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__ && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    json_response([
+        'status' => 'success',
+        'success' => true,
+        'csrfToken' => csrf_token(),
+    ]);
 }

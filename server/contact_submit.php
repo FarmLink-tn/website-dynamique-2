@@ -31,7 +31,7 @@ try {
   $mail->Username = env('SMTP_USER', '');
   $mail->Password = env('SMTP_PASS', '');
 
-  $from = env('MAIL_FROM', 'no-reply@farmlink.tn');
+  $from = env('MAIL_FROM', 'contact@farmlink.tn');
   $to   = env('MAIL_TO', $from);
 
   $mail->setFrom($from, 'FarmLink');
@@ -42,6 +42,7 @@ try {
   $mail->Body = "De: {$name} <{$email}>\n\n{$message}";
 
   $mail->send();
+
   json_response(['ok' => true]);
 } catch (Exception $e) {
   json_response(['ok' => false, 'error' => 'mail_failed'], 500);
